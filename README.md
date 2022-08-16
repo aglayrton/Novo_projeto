@@ -1,46 +1,226 @@
-# Getting Started with Create React App
+//1 momento
+import React, { useEffect } from "react";
+import axios from "axios";
+import md5 from "md5";
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+//CONFIGURAÇÕES
+//da onde vem a requisicao
+const baseUrl = "http://gateway.marvel.com/v1/public/comics?";
+//nossas chaves de acesso
+const publicKey = "43f3fc2f913f61eec09ebd12354eca66";
+const privateKey = "3d5b647ba4b01c978cf4fb4d26d0d21c2e6b1b94";
+//para trabalhar o tempo
+const time = Number(new Date()); //vamos precisar
+//nossa hash
+const hash = md5(time + privateKey + publicKey);
 
-## Available Scripts
+function App() {
+useEffect(() => {
+axios
+.get(`${baseUrl}ts=${time}&apikey=${publicKey}&hash=${hash}`)
+.then((response) => console.log(response.data))
+.catch((error) => console.log(error));
+}, []);
 
-In the project directory, you can run:
+return (
 
-### `npm start`
+<div className='App'>
+<header className='App-header'></header>
+</div>
+);
+}
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+# 2 momento separe tudo
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+import axios from "axios";
+import md5 from "md5";
 
-### `npm test`
+//CONFIGURAÇÕES
+//da onde vem a requisicao
+const baseUrl = "http://gateway.marvel.com/v1/public/comics?";
+//nossas chaves de acesso
+const publicKey = "43f3fc2f913f61eec09ebd12354eca66";
+const privateKey = "3d5b647ba4b01c978cf4fb4d26d0d21c2e6b1b94";
+//para trabalhar o tempo
+const time = Number(new Date()); //vamos precisar
+//nossa hash
+const hash = md5(time + privateKey + publicKey);
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+import React from "react";
 
-### `npm run build`
+export const Personangens: React.FC = () => {
+/_ useEffect(() => {
+axios
+.get(`${baseUrl}ts=${time}&apikey=${publicKey}&hash=${hash}`)
+.then((response) => console.log(response.data))
+.catch((error) => console.log(error));
+}, []);
+_/
+return <h1>caracteres</h1>;
+};
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+import React, { useEffect } from "react";
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+import { Personangens } from "./pages/Personagens";
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+function App() {
+return (
 
-### `npm run eject`
+<div className='App'>
+<Personangens />
+</div>
+);
+}
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+export default App;
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# 3 momento
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+//CONFIGURAÇÕES
+//da onde vem a requisicao
+const baseUrl = "http://gateway.marvel.com/v1/public/";
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+import React, { useEffect, useState } from "react";
+import api from "../../services/api";
 
-## Learn More
+export const Personangens: React.FC = () => {
+const [personagens, setPersonagens] = useState([]);
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+useEffect(() => {
+api
+.get("/comics")
+.then((response) => {
+setPersonagens(response.data.data);
+console.log(response.data.data);
+})
+.catch((error) => console.log(error));
+}, []);
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+return <h1>Personagens</h1>;
+};
+
+# 4
+
+import axios from "axios";
+import md5 from "md5";
+
+//CONFIGURAÇÕES
+//da onde vem a requisicao
+const baseUrl = "http://gateway.marvel.com/v1/public/";
+//nossas chaves de acesso
+const publicKey = "43f3fc2f913f61eec09ebd12354eca66";
+const privateKey = "3d5b647ba4b01c978cf4fb4d26d0d21c2e6b1b94";
+//para trabalhar o tempo
+const time = Number(new Date()); //vamos precisar
+//nossa hash
+const hash = md5(time + privateKey + publicKey);
+
+const api = axios.create({
+baseURL: baseUrl,
+params: {
+ts: time,
+apikey: publicKey,
+hash,
+},
+});
+
+export default api;
+
+import React, { useEffect, useState } from "react";
+import api from "../../services/api";
+
+//temos que criar o tipo que vai ser trabalhado
+interface ResponseData {
+id: string;
+name: string;
+description: string;
+thumbnail: {
+path: string;
+extension: string;
+};
+}
+
+export const Personangens: React.FC = () => {
+const [personagens, setPersonagens] = useState<ResponseData[]>([]);
+
+useEffect(() => {
+api
+.get("/comics?")
+.then((response) => {
+setPersonagens(response.data.data.results);
+console.log(response.data);
+})
+.catch((error) => console.log(error));
+}, []);
+
+return (
+<>
+
+<ul>
+{personagens.map((personagem) => {
+return (
+<li>
+<img
+src={`${personagem.thumbnail.path}.${personagem.thumbnail.extension}`}
+alt={`${personagem.name}`}
+/>
+</li>
+);
+})}
+</ul>
+</>
+);
+};
+
+# 5
+
+import React, { useEffect, useState } from "react";
+import api from "../../services/api";
+
+//temos que criar o tipo que vai ser trabalhado
+interface ResponseData {
+id: string;
+title: string;
+description: string;
+thumbnail: {
+path: string;
+extension: string;
+};
+}
+
+export const Personangens: React.FC = () => {
+const [personagens, setPersonagens] = useState<ResponseData[]>([]);
+
+useEffect(() => {
+api
+.get("/comics?")
+.then((response) => {
+setPersonagens(response.data.data.results);
+console.log(response.data);
+})
+.catch((error) => console.log(error));
+}, []);
+
+return (
+<>
+
+<ul>
+{personagens.map((personagem) => {
+return (
+<li key={personagem.id}>
+<img
+src={`${personagem.thumbnail.path}.${personagem.thumbnail.extension}`}
+alt={`${personagem.title}`}
+/>
+<br></br>
+<span>{`${personagem.title}`}</span>
+<p>{personagem.description}</p>
+</li>
+);
+})}
+</ul>
+</>
+);
+};
+
+# 6
